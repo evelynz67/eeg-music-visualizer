@@ -39,15 +39,33 @@ def getMuseEmotion():
     if latest['alpha'] is None or latest['beta'] is None:
         return None
 
-    alpha = latest['alpha'][0]
-    beta = latest['beta'][0]
+    alpha = latest['alpha']
+    beta = latest['beta']
 
-    arousalRaw = beta / (alpha + 0.001)
+    if len(alpha) < 4 or len(beta) < 4:
+        return None
+
+    AF7 = 1
+    AF8 = 2
+
+    alphaAF7 = alpha[AF7]
+    alphaAF8 = alpha[AF8]
+    betaAF7 = beta[AF7]
+    betaAF8 = beta[AF8]
+
+    # AROUSAL (standard)
+    alphaAvg = (alphaAF7 + alphaAF8) / 2
+    betaAvg = (betaAF7 + betaAF8) / 2
+    arousalRaw = betaAvg / (alphaAvg + 0.001)
     arousal = max(0, min(1, (arousalRaw - 0.8) / 1.5))
 
-    valence = 0
-    return valence, arousal
+    # VALENCE (real method)
+    valenceRaw = alphaAF8 - alphaAF7
 
+    # scale it (IMPORTANT — raw values are big)
+    valence = max(-1, min(1, valenceRaw * 0.05))
+
+    return valence, arousal
 def onAppStart(app):
     app.steps = 0
     app.valence = 0
