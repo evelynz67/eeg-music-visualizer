@@ -29,7 +29,7 @@ def main_onStep(app):
     updateScale(app)
     app.mySound.play(app)
 
-
+    #following lines are from AI
     app.arousalHistory.append(app.arousal)
     app.valenceHistory.append(app.valence)
     # keep list from getting too long
@@ -66,7 +66,7 @@ latest = {
     'hsi': None
 } #where livestream stores data
 
-#all from AI; automatically called and stores new alpha/beta calues
+#following handlers from AI; automatically called and stores new alpha/beta calues
 def alpha_handler(address, *args):
     latest['alpha'] = args
 
@@ -80,7 +80,7 @@ def all_handler(address, *args):
     pass
     #print("RECEIVED:", address, args)
 
-#from AI. start server 
+#from AI, EXEMPT CODE BELOW
 def startMuseServer():
     dispatcher = Dispatcher()
     dispatcher.map("/muse/elements/alpha_absolute", alpha_handler)
@@ -93,7 +93,7 @@ def startMuseServer():
     server.serve_forever()
 
 
-#from AI; turn eeg data --> valence and arousal
+#from AI. turn eeg data --> valence and arousal
 def getMuseEmotion(app):
     if latest['alpha'] is None or latest['beta'] is None:
         return None
@@ -123,6 +123,7 @@ def getMuseEmotion(app):
 
     valenceRaw = alphaAF8 - alphaAF7
 
+    #EXEMPT CODE - everything within this 'if' statement was AI.
     if not app.calibrationDone:
         app.arousalCalibrationSamples.append(arousalRaw)
         app.valenceCalibrationSamples.append(valenceRaw)
@@ -133,8 +134,6 @@ def getMuseEmotion(app):
         return None  # don't output emotion yet
 
     arousal = max(0, min(1, (arousalRaw - app.arousalBaseline) / app.arousalBaseline * 3 + 0.5))
-    #arousal = max(0, min(1, (arousalRaw - 0.9) / 0.8))
-
 
 
     # VALENCE (real method)
@@ -171,8 +170,7 @@ def runMusicVariables(app):
 
 
 
-
-#from Youtube Video
+#from Youtube Video: 'https://www.youtube.com/watch?v=2jYpAamxb-8&t=220s'
 def sine_tone(app,
         frequency: int = 200,
         duration: float = 1.0,
@@ -188,7 +186,7 @@ def sine_tone(app,
     sine *= amplitude
     return sine
 
-#from Youtube video
+#from Youtube video: 'https://www.youtube.com/watch?v=26jQsPu27p0'
 def apply_envelope(app, sound: np.array, adsr: list, sample_rate: int = 44100) -> np.array:
     sound = sound.copy()
     #to get number of samples, multiply duration by sample rate
@@ -207,8 +205,9 @@ def apply_envelope(app, sound: np.array, adsr: list, sample_rate: int = 44100) -
     sound[attack_samples + decay_samples + sustain_samples:] *= np.linspace(adsr[2], 0, release_samples)
     return sound
  
+#Note: To demo or test an emotion's sound, just un-comment the first line and chanege the mood to happy/sad/angry.
 def updateScale(app):
-
+    #app.mySound = CalmScale(app)
     if app.valence >= -0.10 and app.arousal < 0.3:
         app.mySound = CalmScale(app)
     elif app.valence >= -0.10 and app.arousal > 0.3:
@@ -410,6 +409,7 @@ def runVisualVariables(app):
         app.particles.append(p)
     app.maxPoints = 200   # how many points to keep on screen
 
+#AI helped me ideate how to make the particle (all the following particle functions), and I just reformatted it with OOP into a class.
 class Particle:
     def __init__(self, app):
         self.x = random.uniform(0, app.width)
@@ -422,12 +422,12 @@ class Particle:
     def getParticleColorFromValence(self, app, valence):
         valence = max(-1, min(1, valence * 3)) #scale it ..??
         t = (valence + 1) / 2 # map [-1,1] → [0,1]
-        #t = 0.5 + (t - 0.5) ** 3 * 0.5 #this was AI
+        
         r = 255
         g = int(255 * t)
         b = 0
         return rgb(r, g, b)
-        
+    
     def updateParticle(self, app):
         self.color = self.getParticleColorFromValence(app, app.valence)
         jitter = 0.5 + 6 * app.arousal #jitter is linked to arousal
@@ -442,7 +442,7 @@ class Particle:
         if self.y > app.height: self.y = 0
 
 
-
+#From AI 
 def main_redrawAll(app):
     drawRect(0, 0, app.width, app.height, fill='black')
     status = "LIVE" if latest['alpha'] is not None else "WAITING"
@@ -463,6 +463,7 @@ def start_onKeyPress(app, key):
     if key == 'space':
         setActiveScreen('main')
 
+#from AI, EXEMPT CODE BELOW:
 def drawGraphs(app):
     # graph settings
     graphWidth = 300
